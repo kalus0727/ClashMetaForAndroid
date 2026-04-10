@@ -81,15 +81,15 @@
                 <data android:host="install-config"/>
             </intent-filter>
             <intent-filter>
-                <action android:name="com.github.metacubex.clash.meta.action.START_CLASH" />
+                <action android:name="com.klaus.proxy.calc.action.START" />
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
             <intent-filter>
-                <action android:name="com.github.metacubex.clash.meta.action.STOP_CLASH" />
+                <action android:name="com.klaus.proxy.calc.action.STOP" />
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
             <intent-filter>
-                <action android:name="com.github.metacubex.clash.meta.action.TOGGLE_CLASH" />
+                <action android:name="com.klaus.proxy.calc.action.TOGGLE" />
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
