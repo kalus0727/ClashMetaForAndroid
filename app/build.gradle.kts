@@ -8,6 +8,24 @@ plugins {
     id("com.android.application")
 }
 
+// 👇 ===== 这是为你量身定制的伪装核心配置 ===== 👇
+android {
+    // 强制锁定对外展示的包名，彻底摆脱原版特征
+    defaultConfig {
+        applicationId = "com.klaus.proxy.calc"
+    }
+
+    // 强行抹除可能存在的 Flavor (多渠道) 包名后缀
+    // 防止打包系统自动在后面加上 .meta 或 .foss 暴露身份
+    applicationVariants.all {
+        val variant = this
+        variant.outputs.all {
+            variant.mergedFlavor.applicationId = "com.klaus.proxy.calc"
+        }
+    }
+}
+// 👆 ===== 伪装配置结束 ===== 👆
+
 dependencies {
     compileOnly(project(":hideapi"))
 
