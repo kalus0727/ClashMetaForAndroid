@@ -100,13 +100,15 @@ jobs:
             git config --global user.name 'GitHub Action'
             git config --global user.email 'action@github.com'
             
-            # 只明确 add 和 commit 版本号文件，放过 AndroidManifest 等文件
-            git add app/build.gradle.kts
+            # 👇 修复：直接 add 根目录下的这个文件
+            git add build.gradle.kts
+            
+            # 提交并打 Tag
             git commit -m "Bump version to $newVersionName ($newVersionCode)"
             git tag "v$newVersionName"
             git push --follow-tags
           fi
-
+          
       - name: Update CA
         run: |
           sudo apt-get update && sudo apt-get install ca-certificates
