@@ -89,23 +89,21 @@ jobs:
           sudo update-ca-certificates
           cp -f /etc/ssl/certs/ca-certificates.crt core/src/foss/golang/clash/component/ca/ca-certificates.crt
 
-      - name: Signing properties
-        env:
-          SIGNING_STORE_PASSWORD: ${{ secrets.SIGNING_STORE_PASSWORD }}
-          SIGNING_KEY_ALIAS: ${{ secrets.SIGNING_KEY_ALIAS }}
-          SIGNING_KEY_PASSWORD: ${{ secrets.SIGNING_KEY_PASSWORD }}
-        run: |
-          touch signing.properties
-          echo keystore.password="$SIGNING_STORE_PASSWORD" > signing.properties
-          echo key.alias="$SIGNING_KEY_ALIAS" >> signing.properties
-          echo key.password="$SIGNING_KEY_PASSWORD" >> signing.properties
-            
-          echo "cat signing.properties"
-          cat signing.properties
-
+      # 👇 注意：这里直接就是打包命令，没有任何改包名的脚本，纯净测试
       - name: Release Build
         if: success()
         run: ./gradlew --no-daemon app:assembleMetaRelease
+
+      # 👇 替换为你自己的签名脚本 (你之前已经在 Secrets 里配好了)
+      - name: Sign APK (使用你的专属签名)
+        uses: r0adkll/sign-android-release@v1
+        id: sign_app
+        with:
+          releaseDirectory: app/build/outputs/apk/meta/release
+          signingKeyBase64: ${{ secrets.SIGNING_KEY }}
+          alias: ${{ secrets.KEY_ALIAS }}
+          keyStorePassword: ${{ secrets.KEY_STORE_PASSWORD }}
+          keyPassword: ${{ secrets.KEY_PASSWORD }}
 
       - name: Tag Repo
         uses: richardsimko/update-tag@v1
@@ -119,15 +117,6 @@ jobs:
         if: ${{ success() }}
         with:
           tag_name: ${{ inputs.release-tag }}
-          files: app/build/outputs/apk/meta/release/*
+          # 上传你签好名的包
+          files: ${{steps.sign_app.outputs.signedReleaseFile}}
           generate_release_notes: true
-
-      - name: Release Changelog Builder
-        uses: mikepenz/release-changelog-builder-action@v4.1.1
-        with:
-          configurationJson: |
-            {
-              "ignore_labels": [
-                "Update"
-              ],
-            }
