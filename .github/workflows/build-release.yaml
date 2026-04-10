@@ -93,7 +93,7 @@ jobs:
         if: success()
         run: ./gradlew --no-daemon app:assembleMetaRelease
 
-      # 👇 修复: 加入 Zipalign 字节对齐，移除写死的 v1/v2 限制，输出纯净的 release 包
+      # 修复: 加入 Zipalign 字节对齐，移除写死的 v1/v2 限制，输出纯净的 release 包
       - name: 手动签名 APK (适配 Android 16 严格要求)
         run: |
           # 1. 还原密钥
