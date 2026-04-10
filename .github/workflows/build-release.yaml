@@ -94,18 +94,27 @@ jobs:
         if: success()
         run: ./gradlew --no-daemon app:assembleMetaRelease
 
-      # 👇 替换为你自己的签名脚本 (你之前已经在 Secrets 里配好了)
-      - name: Sign APK (使用你的专属签名)
-        uses: r0adkll/sign-android-release@v1
-        id: sign_app
-        with:
-          releaseDirectory: app/build/outputs/apk/meta/release
-          signingKeyBase64: ${{ secrets.SIGNING_KEY }}
-          alias: ${{ secrets.KEY_ALIAS }}
-          keyStorePassword: ${{ secrets.KEY_STORE_PASSWORD }}
-          keyPassword: ${{ secrets.KEY_PASSWORD }}
-          # 👇 关键：手动指定一个现代的版本号（GitHub 服务器目前自带 34.0.0）
-          buildToolsVersion: "34.0.0"
+      - name: 手动签名 APK (兼容性最强版)
+        run: |
+          # 1. 把你的 Base64 签名密钥还原成文件
+          echo "${{ secrets.SIGNING_KEY }}" | base64 -d > my-release-key.jks
+          
+          # 2. 自动寻找服务器上最新的签名工具 (apksigner)
+          APK_SIGNER=$(find $ANDROID_SDK_ROOT/build-tools -name apksigner | sort -r | head -n 1)
+          echo "使用签名工具路径: $APK_SIGNER"
+          
+          # 3. 对目录下所有的 APK 进行签名
+          for apk in app/build/outputs/apk/meta/release/*.apk; do
+            echo "正在签名: $apk"
+            $APK_SIGNER sign --ks my-release-key.jks \
+              --ks-key-alias "${{ secrets.KEY_ALIAS }}" \
+              --ks-pass pass:"${{ secrets.KEY_STORE_PASSWORD }}" \
+              --key-pass pass:"${{ secrets.KEY_PASSWORD }}" \
+              "$apk"
+          done
+          
+          # 4. 签名完成，删除临时密钥文件（为了安全）
+          rm my-release-key.jks
 
       - name: Tag Repo
         uses: richardsimko/update-tag@v1
@@ -119,6 +128,6 @@ jobs:
         if: ${{ success() }}
         with:
           tag_name: ${{ inputs.release-tag }}
-          # 上传你签好名的包
-          files: ${{steps.sign_app.outputs.signedReleaseFile}}
+          # 直接上传目录下所有的 APK，因为刚才我们是原位签名的
+          files: app/build/outputs/apk/meta/release/*.apk
           generate_release_notes: true
