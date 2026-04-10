@@ -104,6 +104,8 @@ jobs:
           alias: ${{ secrets.KEY_ALIAS }}
           keyStorePassword: ${{ secrets.KEY_STORE_PASSWORD }}
           keyPassword: ${{ secrets.KEY_PASSWORD }}
+          # 👇 关键：手动指定一个现代的版本号（GitHub 服务器目前自带 34.0.0）
+          buildToolsVersion: "34.0.0"
 
       - name: Tag Repo
         uses: richardsimko/update-tag@v1
